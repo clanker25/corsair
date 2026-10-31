@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "emitDeclarationOnly": false,
+    "declaration": true,
+    "declarationMap": false,
+    "outDir": "./dist"
+  },
+  "include": ["src/server/**/*", "yaml.d.ts"],
+  "exclude": ["dist", "node_modules", "src/web/**/*"]
+}

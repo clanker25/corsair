@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["esnext"],
+    "types": ["node", "jest"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "outDir": "./dist",
+    "rootDir": "./",
+    "composite": false,
+    "incremental": true,
+    "emitDeclarationOnly": false,
+    "declaration": true,
+    "declarationMap": false,
+    "skipLibCheck": true
+  },
+  "include": ["./**/*"],
+  "exclude": ["dist", "node_modules", "**/*.test.ts"],
+  "references": []
+}
