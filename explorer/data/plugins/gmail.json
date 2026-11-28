@@ -1,0 +1,1761 @@
+{
+  "id": "gmail",
+  "displayName": "Gmail",
+  "description": "Google email service for sending, reading, organizing messages, labels, and inbox automation.",
+  "npmPackageName": "@corsair-dev/gmail",
+  "authTypes": ["oauth_2"],
+  "defaultAuthType": "oauth_2",
+  "counts": {
+    "api": 24,
+    "webhooks": 1,
+    "db": 4
+  },
+  "auth": [
+    {
+      "authType": "oauth_2",
+      "integrationFields": [
+        "client_id",
+        "client_secret",
+        "redirect_url",
+        "topic_id",
+        "pubsub_audience"
+      ],
+      "accountFields": [
+        "access_token",
+        "refresh_token",
+        "expires_at",
+        "scope",
+        "webhook_signature",
+        "email_address",
+        "last_history_id"
+      ]
+    }
+  ],
+  "api": [
+    {
+      "path": "gmail.api.drafts.create",
+      "shortPath": "drafts.create",
+      "description": "Create a new draft",
+      "riskLevel": "write",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "draft",
+            "optional": true,
+            "type": "{ message?: { raw?: string, threadId?: string } }",
+            "description": "Draft payload. message.raw must be a base64url-encoded RFC 2822 email, not plain text."
+          }
+        ]
+      },
+      "output": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "id",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "message",
+            "optional": true,
+            "type": "{ id?: string, threadId?: string, labelIds?: string[], snippet?: string, historyId?: string, internalDate?: string | number | Date | null, sizeEstimate?: number, payload?: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: (recursive) }[] }, raw?: string }"
+          }
+        ]
+      }
+    },
+    {
+      "path": "gmail.api.drafts.delete",
+      "shortPath": "drafts.delete",
+      "description": "Delete a draft",
+      "riskLevel": "destructive",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "id",
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "output": {
+        "kind": "inline",
+        "type": "void"
+      }
+    },
+    {
+      "path": "gmail.api.drafts.get",
+      "shortPath": "drafts.get",
+      "description": "Get a specific draft",
+      "riskLevel": "read",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "id",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "format",
+            "optional": true,
+            "type": "minimal | full | raw | metadata"
+          }
+        ]
+      },
+      "output": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "id",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "message",
+            "optional": true,
+            "type": "{ id?: string, threadId?: string, labelIds?: string[], snippet?: string, historyId?: string, internalDate?: string | number | Date | null, sizeEstimate?: number, payload?: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: (recursive) }[] }, raw?: string }"
+          }
+        ]
+      }
+    },
+    {
+      "path": "gmail.api.drafts.list",
+      "shortPath": "drafts.list",
+      "description": "Returns only draft id and message id/threadId. Use drafts.get to read subject and body",
+      "riskLevel": "read",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "maxResults",
+            "optional": false,
+            "type": "number"
+          },
+          {
+            "key": "pageToken",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "q",
+            "optional": true,
+            "type": "string"
+          }
+        ]
+      },
+      "output": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "drafts",
+            "optional": true,
+            "type": "{ id?: string, message?: { id?: string, threadId?: string, labelIds?: string[], snippet?: string, historyId?: string, internalDate?: string | number | Date | null, sizeEstimate?: number, payload?: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: (recursive) }[] }, raw?: string } }[]"
+          },
+          {
+            "key": "nextPageToken",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "resultSizeEstimate",
+            "optional": true,
+            "type": "number"
+          }
+        ]
+      }
+    },
+    {
+      "path": "gmail.api.drafts.send",
+      "shortPath": "drafts.send",
+      "description": "Send a draft as an email",
+      "riskLevel": "write",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "id",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "message",
+            "optional": true,
+            "type": "{ raw?: string, threadId?: string }",
+            "description": "Optional message body when sending without a draft id. raw must be base64url-encoded RFC 2822, not plain text."
+          }
+        ]
+      },
+      "output": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "id",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "threadId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "labelIds",
+            "optional": true,
+            "type": "string[]"
+          },
+          {
+            "key": "snippet",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "historyId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "internalDate",
+            "optional": true,
+            "type": "string | number | Date | null"
+          },
+          {
+            "key": "sizeEstimate",
+            "optional": true,
+            "type": "number"
+          },
+          {
+            "key": "payload",
+            "optional": true,
+            "type": "{ partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: (recursive) }[] }"
+          },
+          {
+            "key": "raw",
+            "optional": false,
+            "type": "string",
+            "description": "Full RFC 2822 message in base64url encoding (when format=raw). Not plain text — decode base64url before reading headers/body."
+          }
+        ]
+      }
+    },
+    {
+      "path": "gmail.api.drafts.update",
+      "shortPath": "drafts.update",
+      "description": "Update an existing draft",
+      "riskLevel": "write",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "id",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "draft",
+            "optional": true,
+            "type": "{ message?: { raw?: string, threadId?: string } }",
+            "description": "Updated draft payload. message.raw must be a base64url-encoded RFC 2822 email, not plain text."
+          }
+        ]
+      },
+      "output": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "id",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "message",
+            "optional": true,
+            "type": "{ id?: string, threadId?: string, labelIds?: string[], snippet?: string, historyId?: string, internalDate?: string | number | Date | null, sizeEstimate?: number, payload?: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: (recursive) }[] }, raw?: string }"
+          }
+        ]
+      }
+    },
+    {
+      "path": "gmail.api.labels.create",
+      "shortPath": "labels.create",
+      "description": "Create a new label",
+      "riskLevel": "write",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "label",
+            "optional": true,
+            "type": "{ name?: string, messageListVisibility?: show | hide, labelListVisibility?: labelShow | labelShowIfUnread | labelHide, color?: { textColor?: string, backgroundColor?: string } }"
+          }
+        ]
+      },
+      "output": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "id",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "name",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "messageListVisibility",
+            "optional": false,
+            "type": "show | hide"
+          },
+          {
+            "key": "labelListVisibility",
+            "optional": true,
+            "type": "labelShow | labelShowIfUnread | labelHide"
+          },
+          {
+            "key": "type",
+            "optional": true,
+            "type": "system | user"
+          },
+          {
+            "key": "messagesTotal",
+            "optional": true,
+            "type": "number"
+          },
+          {
+            "key": "messagesUnread",
+            "optional": true,
+            "type": "number"
+          },
+          {
+            "key": "threadsTotal",
+            "optional": true,
+            "type": "number"
+          },
+          {
+            "key": "threadsUnread",
+            "optional": true,
+            "type": "number"
+          },
+          {
+            "key": "color",
+            "optional": true,
+            "type": "{ textColor?: string, backgroundColor?: string }"
+          }
+        ]
+      }
+    },
+    {
+      "path": "gmail.api.labels.delete",
+      "shortPath": "labels.delete",
+      "description": "Delete a label",
+      "riskLevel": "destructive",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "id",
+            "optional": true,
+            "type": "string"
+          }
+        ]
+      },
+      "output": {
+        "kind": "inline",
+        "type": "void"
+      }
+    },
+    {
+      "path": "gmail.api.labels.get",
+      "shortPath": "labels.get",
+      "description": "Get a specific label",
+      "riskLevel": "read",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "id",
+            "optional": true,
+            "type": "string"
+          }
+        ]
+      },
+      "output": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "id",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "name",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "messageListVisibility",
+            "optional": true,
+            "type": "show | hide"
+          },
+          {
+            "key": "labelListVisibility",
+            "optional": true,
+            "type": "labelShow | labelShowIfUnread | labelHide"
+          },
+          {
+            "key": "type",
+            "optional": true,
+            "type": "system | user"
+          },
+          {
+            "key": "messagesTotal",
+            "optional": true,
+            "type": "number"
+          },
+          {
+            "key": "messagesUnread",
+            "optional": true,
+            "type": "number"
+          },
+          {
+            "key": "threadsTotal",
+            "optional": true,
+            "type": "number"
+          },
+          {
+            "key": "threadsUnread",
+            "optional": true,
+            "type": "number"
+          },
+          {
+            "key": "color",
+            "optional": false,
+            "type": "{ textColor?: string, backgroundColor?: string }"
+          }
+        ]
+      }
+    },
+    {
+      "path": "gmail.api.labels.list",
+      "shortPath": "labels.list",
+      "description": "List all labels in the mailbox",
+      "riskLevel": "read",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": true,
+            "type": "string"
+          }
+        ]
+      },
+      "output": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "labels",
+            "optional": false,
+            "type": "{ id?: string, name?: string, messageListVisibility?: show | hide, labelListVisibility?: labelShow | labelShowIfUnread | labelHide, type?: system | user, messagesTotal?: number, messagesUnread?: number, threadsTotal?: number, threadsUnread?: number, color?: { textColor?: string, backgroundColor?: string } }[]"
+          }
+        ]
+      }
+    },
+    {
+      "path": "gmail.api.labels.update",
+      "shortPath": "labels.update",
+      "description": "Update an existing label",
+      "riskLevel": "write",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "id",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "label",
+            "optional": true,
+            "type": "{ name?: string, messageListVisibility?: show | hide, labelListVisibility?: labelShow | labelShowIfUnread | labelHide, color?: { textColor?: string, backgroundColor?: string } }"
+          }
+        ]
+      },
+      "output": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "id",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "name",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "messageListVisibility",
+            "optional": false,
+            "type": "show | hide"
+          },
+          {
+            "key": "labelListVisibility",
+            "optional": false,
+            "type": "labelShow | labelShowIfUnread | labelHide"
+          },
+          {
+            "key": "type",
+            "optional": false,
+            "type": "system | user"
+          },
+          {
+            "key": "messagesTotal",
+            "optional": true,
+            "type": "number"
+          },
+          {
+            "key": "messagesUnread",
+            "optional": true,
+            "type": "number"
+          },
+          {
+            "key": "threadsTotal",
+            "optional": true,
+            "type": "number"
+          },
+          {
+            "key": "threadsUnread",
+            "optional": true,
+            "type": "number"
+          },
+          {
+            "key": "color",
+            "optional": false,
+            "type": "{ textColor?: string, backgroundColor?: string }"
+          }
+        ]
+      }
+    },
+    {
+      "path": "gmail.api.messages.batchModify",
+      "shortPath": "messages.batchModify",
+      "description": "Add or remove labels from multiple messages in bulk",
+      "riskLevel": "write",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "ids",
+            "optional": false,
+            "type": "string[]"
+          },
+          {
+            "key": "addLabelIds",
+            "optional": true,
+            "type": "string[]"
+          },
+          {
+            "key": "removeLabelIds",
+            "optional": true,
+            "type": "string[]"
+          }
+        ]
+      },
+      "output": {
+        "kind": "inline",
+        "type": "void"
+      }
+    },
+    {
+      "path": "gmail.api.messages.get",
+      "shortPath": "messages.get",
+      "description": "Read one message. Default format is full, with body text base64url-encoded in payload.body.data, or for multipart messages in payload.parts[].body.data (parts nest); use format metadata for headers only.",
+      "riskLevel": "read",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "id",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "format",
+            "optional": true,
+            "type": "minimal | full | raw | metadata",
+            "description": "Defaults to full: parsed payload. metadata: headers only (pick them with metadataHeaders). minimal: ids and labels. raw: whole RFC 2822 message, base64url-encoded."
+          },
+          {
+            "key": "metadataHeaders",
+            "optional": true,
+            "type": "string[]",
+            "description": "Header names to return, e.g. [\"From\",\"Subject\"]; format must be metadata."
+          }
+        ]
+      },
+      "output": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "id",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "threadId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "labelIds",
+            "optional": true,
+            "type": "string[]"
+          },
+          {
+            "key": "snippet",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "historyId",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "internalDate",
+            "optional": false,
+            "type": "string | number | Date | null"
+          },
+          {
+            "key": "sizeEstimate",
+            "optional": true,
+            "type": "number"
+          },
+          {
+            "key": "payload",
+            "optional": true,
+            "type": "{ partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: (recursive) }[] }"
+          },
+          {
+            "key": "raw",
+            "optional": true,
+            "type": "string",
+            "description": "Full RFC 2822 message in base64url encoding (when format=raw). Not plain text — decode base64url before reading headers/body."
+          }
+        ]
+      }
+    },
+    {
+      "path": "gmail.api.messages.getAttachment",
+      "shortPath": "messages.getAttachment",
+      "description": "Fetch an attachment of a message by partId (shown in messages.get with format full, or in a database search of messages fetched with format full) or attachmentId. Returns the file like Drive files.download: inline when small, otherwise saved by the host and returned as fileId",
+      "riskLevel": "read",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "messageId",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "partId",
+            "optional": true,
+            "type": "string",
+            "description": "partId of an attachment part, e.g. \"1.2\"; shown in messages.get with format full, or in a database search of messages fetched with format full. Give partId or attachmentId"
+          },
+          {
+            "key": "attachmentId",
+            "optional": true,
+            "type": "string",
+            "description": "Gmail attachmentId, if already known. Give partId or attachmentId; with partId, the part's own attachment is read."
+          }
+        ]
+      },
+      "output": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "contentBase64",
+            "optional": true,
+            "type": "string",
+            "description": "The file, base64-encoded. Missing when the file came back as text or contentOmitted is set."
+          },
+          {
+            "key": "text",
+            "optional": true,
+            "type": "string",
+            "description": "The file as text, in place of contentBase64, when it is a text file (CSV, JSON, Markdown, XML and the like) in UTF-8."
+          },
+          {
+            "key": "contentType",
+            "optional": true,
+            "type": "string",
+            "description": "Media type of the file, for example application/pdf."
+          },
+          {
+            "key": "byteLength",
+            "optional": false,
+            "type": "number",
+            "description": "Size of the file in bytes."
+          },
+          {
+            "key": "filename",
+            "optional": false,
+            "type": "string",
+            "description": "The file name, when known."
+          },
+          {
+            "key": "contentOmitted",
+            "optional": false,
+            "type": "not_requested | over_limit",
+            "description": "Set when the content was left out: the caller did not ask for it, or the file was over the limit."
+          },
+          {
+            "key": "fileId",
+            "optional": true,
+            "type": "string",
+            "description": "Where the host saved the file. Over the limit it comes in place of the content; a host that keeps every file sets it beside the content too. On Corsair it is a Files id (fil_…): pass it to another app wherever that app takes a file URL, or read a text file or PDF with files.read_text."
+          }
+        ]
+      }
+    },
+    {
+      "path": "gmail.api.messages.list",
+      "shortPath": "messages.list",
+      "description": "Search messages with structured fields (keywords, from, to, subject, after, before, hasAttachment, label, in, isUnread, ...) or a raw q; no Gmail syntax needed. Returns only id and threadId per message, no subject or body. Use messages.get to read one",
+      "riskLevel": "read",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "q",
+            "optional": true,
+            "type": "string",
+            "description": "Same syntax as the Gmail search box, e.g. \"from:alice newer_than:7d\" or \"after:2025/01/31 has:attachment\". Optional: prefer the structured fields below; when both are given, a message must match both."
+          },
+          {
+            "key": "keywords",
+            "optional": true,
+            "type": "string[]",
+            "description": "Words that must all appear in the message (AND logic)"
+          },
+          {
+            "key": "exactPhrase",
+            "optional": true,
+            "type": "string",
+            "description": "Exact phrase that must appear in the message"
+          },
+          {
+            "key": "anyOf",
+            "optional": true,
+            "type": "string[]",
+            "description": "At least one of these words must appear (OR logic, minimum 2 items)"
+          },
+          {
+            "key": "exclude",
+            "optional": true,
+            "type": "string[]",
+            "description": "Words that must not appear in the message"
+          },
+          {
+            "key": "subject",
+            "optional": true,
+            "type": "string",
+            "description": "Words that must appear in the subject line"
+          },
+          {
+            "key": "from",
+            "optional": true,
+            "type": "string[]",
+            "description": "Sender: email address or name; several match any of them"
+          },
+          {
+            "key": "to",
+            "optional": false,
+            "type": "string[]",
+            "description": "Recipient in the To field: email address or name; several match any of them"
+          },
+          {
+            "key": "cc",
+            "optional": true,
+            "type": "string[]",
+            "description": "Recipient in the Cc field: email address or name; several match any of them"
+          },
+          {
+            "key": "after",
+            "optional": false,
+            "type": "string",
+            "description": "Only messages sent on or after this date (YYYY-MM-DD)"
+          },
+          {
+            "key": "before",
+            "optional": true,
+            "type": "string",
+            "description": "Only messages sent before this date (YYYY-MM-DD)"
+          },
+          {
+            "key": "hasAttachment",
+            "optional": true,
+            "type": "boolean",
+            "description": "true: only messages with an attachment"
+          },
+          {
+            "key": "filename",
+            "optional": true,
+            "type": "string",
+            "description": "Attachment file name or type, e.g. \"report.pdf\" or \"pdf\""
+          },
+          {
+            "key": "label",
+            "optional": true,
+            "type": "string",
+            "description": "Label name (not id), e.g. \"work\". Spaces in a name are written as hyphens."
+          },
+          {
+            "key": "in",
+            "optional": true,
+            "type": "inbox | sent | drafts | trash | spam | snoozed | anywhere",
+            "description": "Mailbox location; \"anywhere\" also searches spam and trash"
+          },
+          {
+            "key": "isUnread",
+            "optional": true,
+            "type": "boolean",
+            "description": "true: only unread messages; false: only read messages"
+          },
+          {
+            "key": "isStarred",
+            "optional": true,
+            "type": "boolean",
+            "description": "true: only starred messages; false: only unstarred ones"
+          },
+          {
+            "key": "larger",
+            "optional": true,
+            "type": "number | string",
+            "description": "Bytes, or a number with a K, M or G suffix such as \"5M\""
+          },
+          {
+            "key": "smaller",
+            "optional": true,
+            "type": "number | string",
+            "description": "Bytes, or a number with a K, M or G suffix such as \"5M\""
+          },
+          {
+            "key": "maxResults",
+            "optional": true,
+            "type": "number",
+            "description": "Defaults to 100, at most 500. Follow nextPageToken for more."
+          },
+          {
+            "key": "pageToken",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "labelIds",
+            "optional": true,
+            "type": "string[]",
+            "description": "Label ids such as INBOX, UNREAD or Label_123, not label names; all of them must match. labels.list returns the ids."
+          },
+          {
+            "key": "includeSpamTrash",
+            "optional": true,
+            "type": "boolean",
+            "description": "Spam and trash are left out unless this is true."
+          }
+        ]
+      },
+      "output": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "messages",
+            "optional": true,
+            "type": "{ id?: string, threadId?: string, labelIds?: string[], snippet?: string, historyId?: string, internalDate?: string | number | Date | null, sizeEstimate?: number, payload?: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: (recursive) }[] }, raw?: string }[]"
+          },
+          {
+            "key": "nextPageToken",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "resultSizeEstimate",
+            "optional": true,
+            "type": "number"
+          }
+        ]
+      }
+    },
+    {
+      "path": "gmail.api.messages.modify",
+      "shortPath": "messages.modify",
+      "description": "Add or remove labels from a message",
+      "riskLevel": "write",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "id",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "addLabelIds",
+            "optional": true,
+            "type": "string[]"
+          },
+          {
+            "key": "removeLabelIds",
+            "optional": true,
+            "type": "string[]"
+          }
+        ]
+      },
+      "output": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "id",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "threadId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "labelIds",
+            "optional": true,
+            "type": "string[]"
+          },
+          {
+            "key": "snippet",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "historyId",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "internalDate",
+            "optional": true,
+            "type": "string | number | Date | null"
+          },
+          {
+            "key": "sizeEstimate",
+            "optional": true,
+            "type": "number"
+          },
+          {
+            "key": "payload",
+            "optional": true,
+            "type": "{ partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: (recursive) }[] }"
+          },
+          {
+            "key": "raw",
+            "optional": false,
+            "type": "string",
+            "description": "Full RFC 2822 message in base64url encoding (when format=raw). Not plain text — decode base64url before reading headers/body."
+          }
+        ]
+      }
+    },
+    {
+      "path": "gmail.api.messages.send",
+      "shortPath": "messages.send",
+      "description": "Send an email to one or more recipients",
+      "riskLevel": "write",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "raw",
+            "optional": false,
+            "type": "string",
+            "description": "Base64url-encoded RFC 2822 email — do NOT pass plain email text. Build the MIME message (From, To, Subject, Content-Type headers, blank line, body; lines separated by \\r\\n), then base64url-encode: standard base64, replace + with -, / with _, remove trailing =."
+          },
+          {
+            "key": "threadId",
+            "optional": true,
+            "type": "string"
+          }
+        ]
+      },
+      "output": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "id",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "threadId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "labelIds",
+            "optional": true,
+            "type": "string[]"
+          },
+          {
+            "key": "snippet",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "historyId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "internalDate",
+            "optional": true,
+            "type": "string | number | Date | null"
+          },
+          {
+            "key": "sizeEstimate",
+            "optional": true,
+            "type": "number"
+          },
+          {
+            "key": "payload",
+            "optional": false,
+            "type": "{ partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: (recursive) }[] }"
+          },
+          {
+            "key": "raw",
+            "optional": true,
+            "type": "string",
+            "description": "Full RFC 2822 message in base64url encoding (when format=raw). Not plain text — decode base64url before reading headers/body."
+          }
+        ]
+      }
+    },
+    {
+      "path": "gmail.api.messages.trash",
+      "shortPath": "messages.trash",
+      "description": "Move a message to the trash",
+      "riskLevel": "write",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "id",
+            "optional": true,
+            "type": "string"
+          }
+        ]
+      },
+      "output": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "id",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "threadId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "labelIds",
+            "optional": true,
+            "type": "string[]"
+          },
+          {
+            "key": "snippet",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "historyId",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "internalDate",
+            "optional": true,
+            "type": "string | number | Date | null"
+          },
+          {
+            "key": "sizeEstimate",
+            "optional": true,
+            "type": "number"
+          },
+          {
+            "key": "payload",
+            "optional": true,
+            "type": "{ partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: (recursive) }[] }"
+          },
+          {
+            "key": "raw",
+            "optional": true,
+            "type": "string",
+            "description": "Full RFC 2822 message in base64url encoding (when format=raw). Not plain text — decode base64url before reading headers/body."
+          }
+        ]
+      }
+    },
+    {
+      "path": "gmail.api.messages.untrash",
+      "shortPath": "messages.untrash",
+      "description": "Restore a message from the trash",
+      "riskLevel": "write",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "id",
+            "optional": true,
+            "type": "string"
+          }
+        ]
+      },
+      "output": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "id",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "threadId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "labelIds",
+            "optional": true,
+            "type": "string[]"
+          },
+          {
+            "key": "snippet",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "historyId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "internalDate",
+            "optional": true,
+            "type": "string | number | Date | null"
+          },
+          {
+            "key": "sizeEstimate",
+            "optional": true,
+            "type": "number"
+          },
+          {
+            "key": "payload",
+            "optional": true,
+            "type": "{ partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: (recursive) }[] }"
+          },
+          {
+            "key": "raw",
+            "optional": true,
+            "type": "string",
+            "description": "Full RFC 2822 message in base64url encoding (when format=raw). Not plain text — decode base64url before reading headers/body."
+          }
+        ]
+      }
+    },
+    {
+      "path": "gmail.api.threads.get",
+      "shortPath": "threads.get",
+      "description": "Get every message in a thread. format works as in messages.get",
+      "riskLevel": "read",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "id",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "format",
+            "optional": true,
+            "type": "minimal | full | metadata",
+            "description": "Defaults to full: parsed payload for every message. metadata: headers only. minimal: ids and labels."
+          },
+          {
+            "key": "metadataHeaders",
+            "optional": true,
+            "type": "string[]",
+            "description": "Header names to return, e.g. [\"From\",\"Subject\"]; format must be metadata."
+          }
+        ]
+      },
+      "output": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "id",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "snippet",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "historyId",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "messages",
+            "optional": true,
+            "type": "{ id?: string, threadId?: string, labelIds?: string[], snippet?: string, historyId?: string, internalDate?: string | number | Date | null, sizeEstimate?: number, payload?: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: (recursive) }[] }, raw?: string }[]"
+          }
+        ]
+      }
+    },
+    {
+      "path": "gmail.api.threads.list",
+      "shortPath": "threads.list",
+      "description": "Returns thread id and snippet only, no messages. Use threads.get for the messages",
+      "riskLevel": "read",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "q",
+            "optional": false,
+            "type": "string",
+            "description": "Same syntax as the Gmail search box, e.g. \"from:alice newer_than:7d\" or \"after:2025/01/31 has:attachment\"."
+          },
+          {
+            "key": "maxResults",
+            "optional": true,
+            "type": "number",
+            "description": "Defaults to 100, at most 500. Follow nextPageToken for more."
+          },
+          {
+            "key": "pageToken",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "labelIds",
+            "optional": true,
+            "type": "string[]",
+            "description": "Label ids such as INBOX, UNREAD or Label_123, not label names; all of them must match. labels.list returns the ids."
+          },
+          {
+            "key": "includeSpamTrash",
+            "optional": false,
+            "type": "boolean",
+            "description": "Spam and trash are left out unless this is true."
+          }
+        ]
+      },
+      "output": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "threads",
+            "optional": true,
+            "type": "{ id?: string, snippet?: string, historyId?: string, messages?: { id?: string, threadId?: string, labelIds?: string[], snippet?: string, historyId?: string, internalDate?: string | number | Date | null, sizeEstimate?: number, payload?: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: (recursive) }[] }, raw?: string }[] }[]"
+          },
+          {
+            "key": "nextPageToken",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "resultSizeEstimate",
+            "optional": true,
+            "type": "number"
+          }
+        ]
+      }
+    },
+    {
+      "path": "gmail.api.threads.modify",
+      "shortPath": "threads.modify",
+      "description": "Add or remove labels from a thread",
+      "riskLevel": "write",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "id",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "addLabelIds",
+            "optional": true,
+            "type": "string[]"
+          },
+          {
+            "key": "removeLabelIds",
+            "optional": true,
+            "type": "string[]"
+          }
+        ]
+      },
+      "output": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "id",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "snippet",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "historyId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "messages",
+            "optional": true,
+            "type": "{ id?: string, threadId?: string, labelIds?: string[], snippet?: string, historyId?: string, internalDate?: string | number | Date | null, sizeEstimate?: number, payload?: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: (recursive) }[] }, raw?: string }[]"
+          }
+        ]
+      }
+    },
+    {
+      "path": "gmail.api.threads.trash",
+      "shortPath": "threads.trash",
+      "description": "Move a thread to the trash",
+      "riskLevel": "write",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "id",
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "output": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "id",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "snippet",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "historyId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "messages",
+            "optional": true,
+            "type": "{ id?: string, threadId?: string, labelIds?: string[], snippet?: string, historyId?: string, internalDate?: string | number | Date | null, sizeEstimate?: number, payload?: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: (recursive) }[] }, raw?: string }[]"
+          }
+        ]
+      }
+    },
+    {
+      "path": "gmail.api.threads.untrash",
+      "shortPath": "threads.untrash",
+      "description": "Restore a thread from the trash",
+      "riskLevel": "write",
+      "input": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "userId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "id",
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "output": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "id",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "snippet",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "historyId",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "key": "messages",
+            "optional": true,
+            "type": "{ id?: string, threadId?: string, labelIds?: string[], snippet?: string, historyId?: string, internalDate?: string | number | Date | null, sizeEstimate?: number, payload?: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: { partId?: string, mimeType?: string, filename?: string, headers?: { name?: string, value?: string }[], body?: { attachmentId?: string, size?: number, data?: string }, parts: (recursive) }[] }, raw?: string }[]"
+          }
+        ]
+      }
+    }
+  ],
+  "webhooks": [
+    {
+      "path": "gmail.webhooks.messageChanged",
+      "shortPath": "messageChanged",
+      "description": "A Gmail message was received, deleted, or had its labels changed",
+      "payload": {
+        "kind": "object",
+        "fields": [
+          {
+            "key": "message",
+            "optional": true,
+            "type": "{ data?: string, attributes?: Record<string, string>, messageId?: string, publishTime?: string }"
+          },
+          {
+            "key": "subscription",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "event",
+            "optional": true,
+            "type": "any"
+          }
+        ]
+      },
+      "responseType": "{ type: messageReceived, emailAddress: string, historyId: string, message: custom } | { type: messageDeleted, emailAddress: string, historyId: string, message: custom } | { type: messageLabelChanged, emailAddress: string, historyId: string, message: custom, labelsAdded?: string[], labelsRemoved?: string[] }",
+      "usageExample": "gmail({\n    webhookHooks: {\n        messageChanged: {\n            before(ctx, args) {\n                return { ctx, args };\n            },\n            after(ctx, response) {\n            },\n        },\n    },\n})"
+    }
+  ],
+  "db": [
+    {
+      "path": "gmail.db.drafts.search",
+      "entityName": "drafts",
+      "filters": [
+        {
+          "field": "entity_id",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "id",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "messageId",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "createdAt",
+          "type": "date",
+          "operators": ["equals", "before", "after", "between"]
+        }
+      ]
+    },
+    {
+      "path": "gmail.db.labels.search",
+      "entityName": "labels",
+      "filters": [
+        {
+          "field": "entity_id",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "id",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "name",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "messageListVisibility",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "labelListVisibility",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "type",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "messagesTotal",
+          "type": "number",
+          "operators": ["equals", "gt", "gte", "lt", "lte", "in"]
+        },
+        {
+          "field": "messagesUnread",
+          "type": "number",
+          "operators": ["equals", "gt", "gte", "lt", "lte", "in"]
+        },
+        {
+          "field": "threadsTotal",
+          "type": "number",
+          "operators": ["equals", "gt", "gte", "lt", "lte", "in"]
+        },
+        {
+          "field": "threadsUnread",
+          "type": "number",
+          "operators": ["equals", "gt", "gte", "lt", "lte", "in"]
+        },
+        {
+          "field": "createdAt",
+          "type": "date",
+          "operators": ["equals", "before", "after", "between"]
+        }
+      ]
+    },
+    {
+      "path": "gmail.db.messages.search",
+      "entityName": "messages",
+      "filters": [
+        {
+          "field": "entity_id",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "id",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "threadId",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "snippet",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "historyId",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "internalDate",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "sizeEstimate",
+          "type": "number",
+          "operators": ["equals", "gt", "gte", "lt", "lte", "in"]
+        },
+        {
+          "field": "raw",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "subject",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "body",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "from",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "to",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "createdAt",
+          "type": "date",
+          "operators": ["equals", "before", "after", "between"]
+        }
+      ]
+    },
+    {
+      "path": "gmail.db.threads.search",
+      "entityName": "threads",
+      "filters": [
+        {
+          "field": "entity_id",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "id",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "snippet",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "historyId",
+          "type": "string",
+          "operators": ["equals", "contains", "startsWith", "endsWith", "in"]
+        },
+        {
+          "field": "createdAt",
+          "type": "date",
+          "operators": ["equals", "before", "after", "between"]
+        }
+      ]
+    }
+  ]
+}

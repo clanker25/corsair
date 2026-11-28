@@ -1,0 +1,99 @@
+import type { MetadataRoute } from 'next';
+
+import { getAllPosts } from '@/lib/blog';
+import { postLastModified } from '@/lib/blog-seo';
+import { getComboCanonicalUrls } from '@/lib/combined-integrations';
+import { COMPARE_SLUGS } from '@/lib/compare-pages';
+import { getGatewayContent } from '@/lib/gateway-content';
+import { USE_CASES } from '@/lib/use-cases';
+import { getCatalogIntegrationIds } from '@/server/catalog-integration-cache';
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+	const [posts, integrationIds, gateway] = await Promise.all([
+		getAllPosts(),
+		getCatalogIntegrationIds(),
+		getGatewayContent(),
+	]);
+
+	return [
+		{
+			url: 'https://corsair.dev',
+			changeFrequency: 'weekly',
+			priority: 1.0,
+		},
+		// The MCP gateway pages, moved here from lug.dev.
+		...['/pricing', '/mcp-gateway', '/connect', '/skills', '/compare'].map(
+			(path) => ({
+				url: `https://corsair.dev${path}`,
+				changeFrequency: 'weekly' as const,
+				priority: 0.9,
+			}),
+		),
+		...gateway.skills.map((skill) => ({
+			url: `https://corsair.dev/skills/${skill.slug}`,
+			changeFrequency: 'monthly' as const,
+			priority: 0.7,
+		})),
+		{
+			url: 'https://corsair.dev/blog',
+			changeFrequency: 'weekly',
+			priority: 0.8,
+		},
+		{
+			url: 'https://corsair.dev/privacy-policy',
+			changeFrequency: 'yearly',
+			priority: 0.3,
+		},
+		{
+			url: 'https://corsair.dev/security',
+			changeFrequency: 'monthly',
+			priority: 0.5,
+		},
+		...COMPARE_SLUGS.map((slug) => ({
+			url: `https://corsair.dev/compare/${slug}`,
+			changeFrequency: 'monthly' as const,
+			priority: 0.7,
+		})),
+		{
+			url: 'https://corsair.dev/integrations',
+			changeFrequency: 'weekly',
+			priority: 0.9,
+		},
+		{
+			url: 'https://corsair.dev/developers',
+			changeFrequency: 'monthly',
+			priority: 0.7,
+		},
+		{
+			url: 'https://corsair.dev/use-cases',
+			changeFrequency: 'weekly',
+			priority: 0.8,
+		},
+		{
+			url: 'https://corsair.dev/built-with',
+			changeFrequency: 'weekly',
+			priority: 0.7,
+		},
+		...USE_CASES.map((useCase) => ({
+			url: `https://corsair.dev/use-cases/${useCase.slug}`,
+			changeFrequency: 'monthly' as const,
+			priority: 0.7,
+		})),
+		...integrationIds.map((id) => ({
+			url: `https://corsair.dev/integrations/${id}`,
+			changeFrequency: 'weekly' as const,
+			priority: 0.8,
+		})),
+		...(await getComboCanonicalUrls()).map((combo) => ({
+			url: `https://corsair.dev${combo}`,
+			changeFrequency: 'weekly' as const,
+			priority: 0.8,
+		})),
+		...posts.map((post) => ({
+			url: `https://corsair.dev/blog/${post.slug}`,
+			lastModified: postLastModified(post),
+			changeFrequency: 'monthly' as const,
+			priority: 0.6,
+		})),
+	];
+}

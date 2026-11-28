@@ -1,0 +1,704 @@
+import { z } from 'zod';
+
+const ContactsGetInputSchema = z.object({
+	contactId: z.string(),
+	properties: z.array(z.string()).optional(),
+	propertiesWithHistory: z.array(z.string()).optional(),
+	associations: z.array(z.string()).optional(),
+	archived: z.boolean().optional(),
+	idProperty: z.string().optional(),
+});
+
+const ContactsGetManyInputSchema = z.object({
+	limit: z.number().optional().describe('Page size, max 100.'),
+	after: z
+		.string()
+		.optional()
+		.describe('paging.next.after from the previous page.'),
+	properties: z
+		.array(z.string())
+		.optional()
+		.describe(
+			'Internal property names such as "hs_lead_status", not labels. Only default properties come back if omitted.',
+		),
+	propertiesWithHistory: z.array(z.string()).optional(),
+	associations: z.array(z.string()).optional(),
+	archived: z.boolean().optional(),
+});
+
+const ContactsCreateInputSchema = z.object({
+	properties: z.record(z.string(), z.string()).optional(),
+	associations: z
+		.array(
+			z.object({
+				to: z.object({ id: z.string() }),
+				types: z.array(
+					z.object({
+						associationCategory: z.string(),
+						associationTypeId: z.number(),
+					}),
+				),
+			}),
+		)
+		.optional(),
+});
+
+const ContactsUpdateInputSchema = z.object({
+	contactId: z.string(),
+	properties: z.record(z.string(), z.string()).optional(),
+});
+
+const ContactsDeleteInputSchema = z.object({
+	contactId: z.string(),
+});
+
+const FilterOperator = z.enum([
+	'BETWEEN',
+	'CONTAINS_TOKEN',
+	'EQ',
+	'GT',
+	'GTE',
+	'HAS_PROPERTY',
+	'IN',
+	'LT',
+	'LTE',
+	'NEQ',
+	'NOT_CONTAINS_TOKEN',
+	'NOT_HAS_PROPERTY',
+	'NOT_IN',
+]);
+
+const FilterSchema = z.object({
+	operator: FilterOperator,
+	propertyName: z.string(),
+	highValue: z.string().optional(),
+	value: z.string().optional(),
+	values: z.array(z.string()).optional(),
+});
+
+const FilterGroupSchema = z.object({
+	filters: z.array(FilterSchema),
+});
+
+const SearchSortDirection = z.enum(['ASCENDING', 'DESCENDING']);
+
+const SearchSortSchema = z.object({
+	propertyName: z.string(),
+	direction: SearchSortDirection,
+});
+
+const AssociationRecords = z.object({
+	id: z.string(),
+	type: z.string().optional(),
+});
+
+const AssociationResults = z.object({
+	results: z.array(AssociationRecords),
+});
+
+const AssociationsSchema = z.record(
+	z.string(),
+	z.union([AssociationResults, z.array(z.string())]),
+);
+
+const ISO_SINCE =
+	/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?(Z|[+-]\d{2}:\d{2})?)?$/;
+
+// Epoch milliseconds for an ISO 8601 date or date-time, or for epoch
+// milliseconds; undefined when it is neither or the date does not exist.
+// A value with no offset is UTC, so the bound never depends on the server's zone.
+export function parseSince(since: string): number | undefined {
+	if (/^\d+$/.test(since)) return Number(since);
+	const m = ISO_SINCE.exec(since);
+	if (!m) return undefined;
+	const [y = 0, mo = 0, d = 0, h = 0, mi = 0] = m
+		.slice(1, 6)
+		.map((v) => Number(v ?? 0));
+	const day = new Date(Date.UTC(y, mo - 1, d));
+	if (day.getUTCMonth() !== mo - 1 || day.getUTCDate() !== d) return undefined;
+	if (h > 23 || mi > 59 || Number(m[6] ?? 0) > 59) return undefined;
+	const ms = Date.parse(m[4] && !m[7] ? `${since}Z` : since);
+	return Number.isNaN(ms) ? undefined : ms;
+}
+
+export const RecentInputSchema = z.object({
+	count: z.number().int().max(200).optional().describe('Page size, max 200.'),
+	after: z
+		.string()
+		.optional()
+		.describe('paging.next.after from the previous page.'),
+	since: z
+		.string()
+		.refine((v) => parseSince(v) !== undefined, {
+			message: 'since must be an ISO 8601 date-time or epoch milliseconds',
+		})
+		.optional()
+		.describe(
+			'ISO 8601 date-time (UTC when it has no offset) or epoch milliseconds; keeps records created (getRecentlyCreated) or modified (getRecentlyUpdated) at or after it.',
+		),
+});
+
+const ContactsSearchInputSchema = z.object({
+	query: z
+		.string()
+		.optional()
+		.describe(
+			'Free text matched against the default searchable text properties.',
+		),
+	limit: z.number().optional().describe('Page size, max 200.'),
+	after: z
+		.string()
+		.optional()
+		.describe('paging.next.after from the previous page.'),
+	sorts: z
+		.array(SearchSortSchema)
+		.optional()
+		.describe(
+			'One sort only, e.g. [{"propertyName":"createdate","direction":"DESCENDING"}].',
+		),
+	properties: z
+		.array(z.string())
+		.optional()
+		.describe(
+			'Internal property names to return, not labels. Only default properties come back if omitted.',
+		),
+	filterGroups: z
+		.array(FilterGroupSchema)
+		.optional()
+		.describe(
+			'Groups are ORed, filters inside a group are ANDed (max 5 groups, 6 filters each). Dates as epoch milliseconds in a string. e.g. [{"filters":[{"propertyName":"email","operator":"EQ","value":"a@b.com"}]}].',
+		),
+});
+
+const CompaniesGetInputSchema = z.object({
+	companyId: z.string(),
+	properties: z.array(z.string()).optional(),
+	propertiesWithHistory: z.array(z.string()).optional(),
+	associations: z.array(z.string()).optional(),
+	archived: z.boolean().optional(),
+	idProperty: z.string().optional(),
+});
+
+const CompaniesGetManyInputSchema = z.object({
+	limit: z.number().optional().describe('Page size, max 100.'),
+	after: z
+		.string()
+		.optional()
+		.describe('paging.next.after from the previous page.'),
+	properties: z
+		.array(z.string())
+		.optional()
+		.describe(
+			'Internal property names such as "hs_lead_status", not labels. Only default properties come back if omitted.',
+		),
+	propertiesWithHistory: z.array(z.string()).optional(),
+	associations: z.array(z.string()).optional(),
+	archived: z.boolean().optional(),
+});
+
+const CompaniesCreateInputSchema = z.object({
+	properties: z.record(z.string(), z.string()).optional(),
+	associations: z
+		.array(
+			z.object({
+				to: z.object({ id: z.string() }),
+				types: z.array(
+					z.object({
+						associationCategory: z.string(),
+						associationTypeId: z.number(),
+					}),
+				),
+			}),
+		)
+		.optional(),
+});
+
+const CompaniesUpdateInputSchema = z.object({
+	companyId: z.string(),
+	properties: z.record(z.string(), z.string()).optional(),
+});
+
+const CompaniesDeleteInputSchema = z.object({
+	companyId: z.string(),
+});
+
+const CompaniesSearchByDomainInputSchema = z.object({
+	domain: z
+		.string()
+		.describe('Company domain such as "example.com", matched exactly.'),
+	properties: z
+		.array(z.string())
+		.optional()
+		.describe('Internal property names to return, not labels.'),
+	after: z
+		.string()
+		.optional()
+		.describe('paging.next.after from the previous page.'),
+});
+
+const DealsGetInputSchema = z.object({
+	dealId: z.string(),
+	properties: z.array(z.string()).optional(),
+	propertiesWithHistory: z.array(z.string()).optional(),
+	associations: z.array(z.string()).optional(),
+	archived: z.boolean().optional(),
+	idProperty: z.string().optional(),
+});
+
+const DealsGetManyInputSchema = z.object({
+	limit: z.number().optional().describe('Page size, max 100.'),
+	after: z
+		.string()
+		.optional()
+		.describe('paging.next.after from the previous page.'),
+	properties: z
+		.array(z.string())
+		.optional()
+		.describe(
+			'Internal property names such as "hs_lead_status", not labels. Only default properties come back if omitted.',
+		),
+	propertiesWithHistory: z.array(z.string()).optional(),
+	associations: z.array(z.string()).optional(),
+	archived: z.boolean().optional(),
+});
+
+const DealsCreateInputSchema = z.object({
+	properties: z.record(z.string(), z.string()).optional(),
+	associations: z
+		.array(
+			z.object({
+				to: z.object({ id: z.string() }),
+				types: z.array(
+					z.object({
+						associationCategory: z.string(),
+						associationTypeId: z.number(),
+					}),
+				),
+			}),
+		)
+		.optional(),
+});
+
+const DealsUpdateInputSchema = z.object({
+	dealId: z.string(),
+	properties: z.record(z.string(), z.string()).optional(),
+});
+
+const DealsDeleteInputSchema = z.object({
+	dealId: z.string(),
+});
+
+const DealsSearchInputSchema = z.object({
+	query: z
+		.string()
+		.optional()
+		.describe(
+			'Free text matched against the default searchable text properties.',
+		),
+	limit: z.number().optional().describe('Page size, max 200.'),
+	after: z
+		.string()
+		.optional()
+		.describe('paging.next.after from the previous page.'),
+	sorts: z
+		.array(SearchSortSchema)
+		.optional()
+		.describe(
+			'One sort only, e.g. [{"propertyName":"createdate","direction":"DESCENDING"}].',
+		),
+	properties: z
+		.array(z.string())
+		.optional()
+		.describe(
+			'Internal property names to return, not labels. Only default properties come back if omitted.',
+		),
+	filterGroups: z
+		.array(FilterGroupSchema)
+		.optional()
+		.describe(
+			'Groups are ORed, filters inside a group are ANDed (max 5 groups, 6 filters each). Dates as epoch milliseconds in a string. e.g. [{"filters":[{"propertyName":"dealname","operator":"EQ","value":"Acme renewal"}]}].',
+		),
+});
+
+const TicketsGetInputSchema = z.object({
+	ticketId: z.string(),
+	properties: z.array(z.string()).optional(),
+	propertiesWithHistory: z.array(z.string()).optional(),
+	associations: z.array(z.string()).optional(),
+	archived: z.boolean().optional(),
+	idProperty: z.string().optional(),
+});
+
+const TicketsGetManyInputSchema = z.object({
+	limit: z.number().optional().describe('Page size, max 100.'),
+	after: z
+		.string()
+		.optional()
+		.describe('paging.next.after from the previous page.'),
+	properties: z
+		.array(z.string())
+		.optional()
+		.describe(
+			'Internal property names such as "hs_lead_status", not labels. Only default properties come back if omitted.',
+		),
+	propertiesWithHistory: z.array(z.string()).optional(),
+	associations: z.array(z.string()).optional(),
+	archived: z.boolean().optional(),
+});
+
+const TicketsCreateInputSchema = z.object({
+	properties: z.record(z.string(), z.string()).optional(),
+	associations: z
+		.array(
+			z.object({
+				to: z.object({ id: z.string() }),
+				types: z.array(
+					z.object({
+						associationCategory: z.string(),
+						associationTypeId: z.number(),
+					}),
+				),
+			}),
+		)
+		.optional(),
+});
+
+const TicketsUpdateInputSchema = z.object({
+	ticketId: z.string(),
+	properties: z.record(z.string(), z.string()).optional(),
+});
+
+const TicketsDeleteInputSchema = z.object({
+	ticketId: z.string(),
+});
+
+const EngagementsGetInputSchema = z.object({
+	engagementId: z.string(),
+});
+
+const EngagementsGetManyInputSchema = z.object({
+	limit: z.number().optional(),
+	after: z.string().optional(),
+});
+
+const EngagementsCreateInputSchema = z.object({
+	engagement: z.object({
+		active: z.boolean().optional(),
+		type: z.string(),
+		timestamp: z.number().optional(),
+	}),
+	associations: z
+		.object({
+			contactIds: z.array(z.number()).optional(),
+			companyIds: z.array(z.number()).optional(),
+			dealIds: z.array(z.number()).optional(),
+			ownerIds: z.array(z.number()).optional(),
+		})
+		.optional(),
+	// keeping metadata as any for now
+	metadata: z.record(z.string(), z.any()).optional(),
+});
+
+const EngagementsDeleteInputSchema = z.object({
+	engagementId: z.string(),
+});
+
+const ContactListsAddContactInputSchema = z.object({
+	listId: z.string(),
+	emails: z.array(z.string()).optional(),
+	vids: z.array(z.number()).optional(),
+});
+
+const ContactListsRemoveContactInputSchema = z.object({
+	listId: z.string(),
+	emails: z.array(z.string()).optional(),
+	vids: z.array(z.number()).optional(),
+});
+
+export const HubSpotEndpointInputSchemas = {
+	contactsGet: ContactsGetInputSchema,
+	contactsGetMany: ContactsGetManyInputSchema,
+	contactsCreate: ContactsCreateInputSchema,
+	contactsUpdate: ContactsUpdateInputSchema,
+	contactsDelete: ContactsDeleteInputSchema,
+	contactsGetRecentlyCreated: RecentInputSchema,
+	contactsGetRecentlyUpdated: RecentInputSchema,
+	contactsSearch: ContactsSearchInputSchema,
+	companiesGet: CompaniesGetInputSchema,
+	companiesGetMany: CompaniesGetManyInputSchema,
+	companiesCreate: CompaniesCreateInputSchema,
+	companiesUpdate: CompaniesUpdateInputSchema,
+	companiesDelete: CompaniesDeleteInputSchema,
+	companiesGetRecentlyCreated: RecentInputSchema,
+	companiesGetRecentlyUpdated: RecentInputSchema,
+	companiesSearchByDomain: CompaniesSearchByDomainInputSchema,
+	dealsGet: DealsGetInputSchema,
+	dealsGetMany: DealsGetManyInputSchema,
+	dealsCreate: DealsCreateInputSchema,
+	dealsUpdate: DealsUpdateInputSchema,
+	dealsDelete: DealsDeleteInputSchema,
+	dealsGetRecentlyCreated: RecentInputSchema,
+	dealsGetRecentlyUpdated: RecentInputSchema,
+	dealsSearch: DealsSearchInputSchema,
+	ticketsGet: TicketsGetInputSchema,
+	ticketsGetMany: TicketsGetManyInputSchema,
+	ticketsCreate: TicketsCreateInputSchema,
+	ticketsUpdate: TicketsUpdateInputSchema,
+	ticketsDelete: TicketsDeleteInputSchema,
+	engagementsGet: EngagementsGetInputSchema,
+	engagementsGetMany: EngagementsGetManyInputSchema,
+	engagementsCreate: EngagementsCreateInputSchema,
+	engagementsDelete: EngagementsDeleteInputSchema,
+	contactListsAddContact: ContactListsAddContactInputSchema,
+	contactListsRemoveContact: ContactListsRemoveContactInputSchema,
+} as const;
+
+export type HubSpotEndpointInputs = {
+	[K in keyof typeof HubSpotEndpointInputSchemas]: z.infer<
+		(typeof HubSpotEndpointInputSchemas)[K]
+	>;
+};
+
+const ContactResponseSchema = z
+	.object({
+		id: z.string(),
+		properties: z.record(z.string(), z.string()).optional(),
+		createdAt: z.coerce.date().nullable().optional(),
+		updatedAt: z.coerce.date().nullable().optional(),
+		archived: z.boolean().optional(),
+		associations: AssociationsSchema.optional(),
+	})
+	.loose();
+
+const CompanyResponseSchema = z
+	.object({
+		id: z.string(),
+		properties: z.record(z.string(), z.string()).optional(),
+		createdAt: z.coerce.date().nullable().optional(),
+		updatedAt: z.coerce.date().nullable().optional(),
+		archived: z.boolean().optional(),
+		associations: AssociationsSchema.optional(),
+	})
+	.loose();
+
+const DealResponseSchema = z
+	.object({
+		id: z.string(),
+		properties: z.record(z.string(), z.string()).optional(),
+		createdAt: z.coerce.date().nullable().optional(),
+		updatedAt: z.coerce.date().nullable().optional(),
+		archived: z.boolean().optional(),
+		associations: AssociationsSchema.optional(),
+	})
+	.loose();
+
+const TicketResponseSchema = z
+	.object({
+		id: z.string(),
+		properties: z.record(z.string(), z.string()).optional(),
+		createdAt: z.coerce.date().nullable().optional(),
+		updatedAt: z.coerce.date().nullable().optional(),
+		archived: z.boolean().optional(),
+		associations: AssociationsSchema.optional(),
+	})
+	.loose();
+
+const EngagementResponseSchema = z
+	.object({
+		id: z.string(),
+		engagement: z
+			.object({
+				id: z.number().optional(),
+				portalId: z.number().optional(),
+				active: z.boolean().optional(),
+				createdAt: z.number().optional(),
+				lastUpdated: z.number().optional(),
+				createdBy: z.number().optional(),
+				modifiedBy: z.number().optional(),
+				ownerId: z.number().optional(),
+				type: z.string().optional(),
+				timestamp: z.number().optional(),
+			})
+			.optional(),
+		associations: AssociationsSchema.optional(),
+		// keeping metadata as any for now
+		metadata: z.record(z.string(), z.any()).optional(),
+	})
+	.loose();
+
+const PagingResponseSchema = z.object({
+	next: z
+		.object({
+			after: z.string(),
+		})
+		.optional(),
+	prev: z
+		.object({
+			before: z.string(),
+		})
+		.optional(),
+});
+
+const GetManyContactsResponseSchema = z
+	.object({
+		total: z.number().optional(),
+		results: z.array(ContactResponseSchema).optional(),
+		paging: PagingResponseSchema.optional(),
+	})
+	.loose();
+
+const GetManyCompaniesResponseSchema = z
+	.object({
+		total: z.number().optional(),
+		results: z.array(CompanyResponseSchema).optional(),
+		paging: PagingResponseSchema.optional(),
+	})
+	.loose();
+
+const GetManyDealsResponseSchema = z
+	.object({
+		total: z.number().optional(),
+		results: z.array(DealResponseSchema).optional(),
+		paging: PagingResponseSchema.optional(),
+	})
+	.loose();
+
+const GetManyTicketsResponseSchema = z
+	.object({
+		results: z.array(TicketResponseSchema).optional(),
+		paging: PagingResponseSchema.optional(),
+	})
+	.loose();
+
+const GetManyEngagementsResponseSchema = z
+	.object({
+		results: z.array(EngagementResponseSchema).optional(),
+		paging: PagingResponseSchema.optional(),
+	})
+	.loose();
+
+const SearchCompanyByDomainResponseSchema = z
+	.object({
+		total: z.number().optional(),
+		results: z.array(CompanyResponseSchema).optional(),
+		paging: PagingResponseSchema.optional(),
+	})
+	.loose();
+
+const AddContactToListResponseSchema = z.object({
+	updated: z.array(z.number()).optional(),
+	discarded: z.array(z.number()).optional(),
+	invalidVids: z.array(z.number()).optional(),
+	invalidEmails: z.array(z.string()).optional(),
+});
+
+export const HubSpotEndpointOutputSchemas = {
+	contactsGet: ContactResponseSchema,
+	contactsGetMany: GetManyContactsResponseSchema,
+	contactsCreate: ContactResponseSchema,
+	contactsUpdate: ContactResponseSchema,
+	contactsDelete: z.void(),
+	contactsGetRecentlyCreated: GetManyContactsResponseSchema,
+	contactsGetRecentlyUpdated: GetManyContactsResponseSchema,
+	contactsSearch: GetManyContactsResponseSchema,
+	companiesGet: CompanyResponseSchema,
+	companiesGetMany: GetManyCompaniesResponseSchema,
+	companiesCreate: CompanyResponseSchema,
+	companiesUpdate: CompanyResponseSchema,
+	companiesDelete: z.void(),
+	companiesGetRecentlyCreated: GetManyCompaniesResponseSchema,
+	companiesGetRecentlyUpdated: GetManyCompaniesResponseSchema,
+	companiesSearchByDomain: SearchCompanyByDomainResponseSchema,
+	dealsGet: DealResponseSchema,
+	dealsGetMany: GetManyDealsResponseSchema,
+	dealsCreate: DealResponseSchema,
+	dealsUpdate: DealResponseSchema,
+	dealsDelete: z.void(),
+	dealsGetRecentlyCreated: GetManyDealsResponseSchema,
+	dealsGetRecentlyUpdated: GetManyDealsResponseSchema,
+	dealsSearch: GetManyDealsResponseSchema,
+	ticketsGet: TicketResponseSchema,
+	ticketsGetMany: GetManyTicketsResponseSchema,
+	ticketsCreate: TicketResponseSchema,
+	ticketsUpdate: TicketResponseSchema,
+	ticketsDelete: z.void(),
+	engagementsGet: EngagementResponseSchema,
+	engagementsGetMany: GetManyEngagementsResponseSchema,
+	engagementsCreate: EngagementResponseSchema,
+	engagementsDelete: z.void(),
+	contactListsAddContact: AddContactToListResponseSchema,
+	contactListsRemoveContact: AddContactToListResponseSchema,
+} as const;
+
+export type HubSpotEndpointOutputs = {
+	[K in keyof typeof HubSpotEndpointOutputSchemas]: z.infer<
+		(typeof HubSpotEndpointOutputSchemas)[K]
+	>;
+};
+
+export type GetContactResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.contactsGet
+>;
+export type GetManyContactsResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.contactsGetMany
+>;
+export type CreateContactResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.contactsCreate
+>;
+export type UpdateContactResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.contactsUpdate
+>;
+export type GetCompanyResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.companiesGet
+>;
+export type GetManyCompaniesResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.companiesGetMany
+>;
+export type CreateCompanyResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.companiesCreate
+>;
+export type UpdateCompanyResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.companiesUpdate
+>;
+export type SearchCompanyByDomainResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.companiesSearchByDomain
+>;
+export type GetDealResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.dealsGet
+>;
+export type GetManyDealsResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.dealsGetMany
+>;
+export type CreateDealResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.dealsCreate
+>;
+export type UpdateDealResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.dealsUpdate
+>;
+export type GetTicketResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.ticketsGet
+>;
+export type GetManyTicketsResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.ticketsGetMany
+>;
+export type CreateTicketResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.ticketsCreate
+>;
+export type UpdateTicketResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.ticketsUpdate
+>;
+export type GetEngagementResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.engagementsGet
+>;
+export type GetManyEngagementsResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.engagementsGetMany
+>;
+export type CreateEngagementResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.engagementsCreate
+>;
+export type AddContactToListResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.contactListsAddContact
+>;
+export type RemoveContactFromListResponse = z.infer<
+	typeof HubSpotEndpointOutputSchemas.contactListsRemoveContact
+>;

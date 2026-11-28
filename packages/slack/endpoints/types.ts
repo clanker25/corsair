@@ -1,0 +1,1310 @@
+import { FileOutputSchema } from 'corsair/http';
+import { z } from 'zod';
+
+const ChannelsArchiveInputSchema = z.object({
+	channel: z.string(),
+});
+
+const ChannelsCloseInputSchema = z.object({
+	channel: z.string(),
+});
+
+const ChannelsCreateInputSchema = z.object({
+	name: z.string(),
+	is_private: z.boolean().optional(),
+	team_id: z.string().optional(),
+});
+
+const ChannelsGetInputSchema = z.object({
+	channel: z.string(),
+	include_locale: z.boolean().optional(),
+	include_num_members: z.boolean().optional(),
+});
+
+const CHANNEL_TYPES_DESCRIPTION =
+	'Comma-separated: public_channel, private_channel, mpim, im. Slack returns only public_channel when omitted, so pass "public_channel,private_channel" to include private ones.';
+
+const ChannelsListInputSchema = z.object({
+	exclude_archived: z.boolean().optional(),
+	types: z.string().optional().describe(CHANNEL_TYPES_DESCRIPTION),
+	team_id: z.string().optional(),
+	cursor: z.string().optional(),
+	limit: z.number().optional(),
+});
+
+const ChannelsListMineInputSchema = z.object({
+	user: z.string().optional(),
+	types: z.string().optional().describe(CHANNEL_TYPES_DESCRIPTION),
+	exclude_archived: z.boolean().optional(),
+	team_id: z.string().optional(),
+	cursor: z.string().optional(),
+	limit: z.number().optional(),
+});
+
+const ChannelsGetHistoryInputSchema = z.object({
+	channel: z
+		.string()
+		.describe(
+			'Conversation id such as C0123ABCD, not the name. channels.list and channels.listMine return ids.',
+		),
+	latest: z
+		.string()
+		.optional()
+		.describe(
+			'Unix timestamp such as "1700000000.000000", not an ISO date. Only messages before it.',
+		),
+	oldest: z
+		.string()
+		.optional()
+		.describe(
+			'Unix timestamp such as "1700000000.000000", not an ISO date. Only messages after it.',
+		),
+	inclusive: z
+		.boolean()
+		.optional()
+		.describe(
+			'Also return messages at exactly oldest or latest. Ignored unless one is set.',
+		),
+	include_all_metadata: z.boolean().optional(),
+	cursor: z.string().optional(),
+	limit: z
+		.number()
+		.optional()
+		.describe(
+			'Default 100, at most 999. A page can be shorter; follow the cursor.',
+		),
+});
+
+const ChannelsInviteInputSchema = z.object({
+	channel: z.string(),
+	users: z.string(),
+	force: z.boolean().optional(),
+});
+
+const ChannelsJoinInputSchema = z.object({
+	channel: z.string(),
+});
+
+const ChannelsKickInputSchema = z.object({
+	channel: z.string(),
+	user: z.string(),
+});
+
+const ChannelsLeaveInputSchema = z.object({
+	channel: z.string(),
+});
+
+const ChannelsGetMembersInputSchema = z.object({
+	channel: z.string(),
+	cursor: z.string().optional(),
+	limit: z.number().optional(),
+});
+
+const ChannelsOpenInputSchema = z.object({
+	channel: z.string().optional(),
+	users: z.string().optional(),
+	prevent_creation: z.boolean().optional(),
+	return_im: z.boolean().optional(),
+});
+
+const ChannelsRenameInputSchema = z.object({
+	channel: z.string(),
+	name: z.string(),
+});
+
+const ChannelsGetRepliesInputSchema = z.object({
+	channel: z
+		.string()
+		.describe('Conversation id such as C0123ABCD, not the name.'),
+	ts: z
+		.string()
+		.describe(
+			'ts of the thread parent, or of a message in the thread, e.g. "1700000000.000100". With no replies only that message comes back.',
+		),
+	latest: z
+		.string()
+		.optional()
+		.describe(
+			'Unix timestamp such as "1700000000.000000". Only messages before it.',
+		),
+	oldest: z
+		.string()
+		.optional()
+		.describe(
+			'Unix timestamp such as "1700000000.000000". Only messages after it.',
+		),
+	inclusive: z
+		.boolean()
+		.optional()
+		.describe(
+			'Also return messages at exactly oldest or latest. Ignored unless one is set.',
+		),
+	include_all_metadata: z.boolean().optional(),
+	cursor: z.string().optional(),
+	limit: z.number().optional().describe('Default 1000.'),
+});
+
+const ChannelsSetPurposeInputSchema = z.object({
+	channel: z.string(),
+	purpose: z.string(),
+});
+
+const ChannelsSetTopicInputSchema = z.object({
+	channel: z.string(),
+	topic: z.string(),
+});
+
+const ChannelsUnarchiveInputSchema = z.object({
+	channel: z.string(),
+});
+
+const UsersGetInputSchema = z.object({
+	user: z.string(),
+	include_locale: z.boolean().optional(),
+});
+
+const UsersListInputSchema = z.object({
+	include_locale: z.boolean().optional(),
+	team_id: z.string().optional(),
+	cursor: z.string().optional(),
+	limit: z
+		.number()
+		.optional()
+		.describe(
+			'Set it. With no limit Slack tries to return every user, which can fail with limit_required or HTTP 500 on a large workspace. Follow the cursor.',
+		),
+});
+
+const UsersGetProfileInputSchema = z.object({
+	user: z.string().optional(),
+	include_labels: z.boolean().optional(),
+});
+
+const UsersGetPresenceInputSchema = z.object({
+	user: z.string().optional(),
+});
+
+const UsersUpdateProfileInputSchema = z.object({
+	profile: z.record(z.string(), z.unknown()).optional(),
+	user: z.string().optional(),
+	name: z.string().optional(),
+	value: z.string().optional(),
+});
+
+const UserGroupsCreateInputSchema = z.object({
+	name: z.string(),
+	channels: z.string().optional(),
+	description: z.string().optional(),
+	handle: z.string().optional(),
+	include_count: z.boolean().optional(),
+	team_id: z.string().optional(),
+});
+
+const UserGroupsDisableInputSchema = z.object({
+	userGroup: z.string(),
+	include_count: z.boolean().optional(),
+	team_id: z.string().optional(),
+});
+
+const UserGroupsEnableInputSchema = z.object({
+	userGroup: z.string(),
+	include_count: z.boolean().optional(),
+	team_id: z.string().optional(),
+});
+
+const UserGroupsListInputSchema = z.object({
+	include_count: z.boolean().optional(),
+	include_disabled: z.boolean().optional(),
+	include_users: z.boolean().optional(),
+	team_id: z.string().optional(),
+});
+
+const UserGroupsUpdateInputSchema = z.object({
+	userGroup: z.string(),
+	name: z.string().optional(),
+	channels: z.string().optional(),
+	description: z.string().optional(),
+	handle: z.string().optional(),
+	include_count: z.boolean().optional(),
+	team_id: z.string().optional(),
+});
+
+const FilesGetInputSchema = z.object({
+	file: z.string().describe('File id such as F2147483862.'),
+	cursor: z.string().optional(),
+	limit: z.number().optional(),
+	page: z.number().optional(),
+	count: z.number().optional(),
+});
+
+const FilesDownloadInputSchema = z.object({
+	file: z
+		.string()
+		.describe(
+			'Slack file id such as F0CL9G3CAR2, from files[] in channels.getHistory or files.list.',
+		),
+});
+
+const FilesListInputSchema = z.object({
+	channel: z.string().optional(),
+	user: z.string().optional(),
+	types: z
+		.string()
+		.optional()
+		.describe(
+			'Comma-separated: all, spaces, snippets, images, gdocs, zips, pdfs. Default all.',
+		),
+	ts_from: z
+		.string()
+		.optional()
+		.describe('Unix timestamp. Files created at or after it.'),
+	ts_to: z
+		.string()
+		.optional()
+		.describe('Unix timestamp. Files created at or before it.'),
+	show_files_hidden_by_limit: z.boolean().optional(),
+	team_id: z.string().optional(),
+	page: z.number().optional().describe('Default 1.'),
+	count: z.number().optional().describe('Files per page, default 100.'),
+});
+
+const FilesUploadInputSchema = z.object({
+	channels: z.string().optional(),
+	content: z.string().optional(),
+	file: z.unknown().optional(),
+	filename: z.string().optional(),
+	filetype: z.string().optional(),
+	initial_comment: z.string().optional(),
+	thread_ts: z.string().optional(),
+	title: z.string().optional(),
+});
+
+const MessagesDeleteInputSchema = z.object({
+	channel: z.string(),
+	ts: z.string(),
+	as_user: z.boolean().optional(),
+});
+
+const MessagesGetPermalinkInputSchema = z.object({
+	channel: z.string(),
+	message_ts: z.string(),
+});
+
+const SlackDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Must be YYYY-MM-DD');
+
+const MessagesSearchInputSchema = z.object({
+	query: z
+		.string()
+		.optional()
+		.describe(
+			'Slack search string; modifiers such as in:#channel, from:@user and has: narrow it. Optional: prefer the structured fields below; when both are given, a message must match both.',
+		),
+	keywords: z
+		.array(z.string().min(1))
+		.optional()
+		.describe('Words that must all appear in the message'),
+	exactPhrase: z
+		.string()
+		.optional()
+		.describe('Exact phrase that must appear in the message'),
+	exclude: z
+		.array(z.string().min(1))
+		.optional()
+		.describe('Words that must not appear in the message'),
+	in: z
+		.string()
+		.optional()
+		.describe('Channel name, e.g. "team-marketing" (the # is added for you)'),
+	notIn: z
+		.array(z.string().min(1))
+		.optional()
+		.describe('Channel names to leave out of the results'),
+	from: z
+		.string()
+		.optional()
+		.describe('Sender display name, e.g. "Sara" (the @ is added for you)'),
+	notFrom: z
+		.array(z.string().min(1))
+		.optional()
+		.describe('Sender display names to leave out of the results'),
+	with: z
+		.string()
+		.optional()
+		.describe('Display name of a person: threads and DMs with them'),
+	after: SlackDate.optional().describe(
+		'Only messages after this date (YYYY-MM-DD)',
+	),
+	before: SlackDate.optional().describe(
+		'Only messages before this date (YYYY-MM-DD)',
+	),
+	on: SlackDate.optional().describe('Only messages on this date (YYYY-MM-DD)'),
+	during: z
+		.string()
+		.optional()
+		.describe('A month or year, e.g. "august" or "2025"'),
+	hasPin: z.boolean().optional().describe('true: only pinned messages'),
+	hasReaction: z
+		.string()
+		.optional()
+		.describe('Emoji name of a reaction on the message, e.g. "eyes"'),
+	isSaved: z
+		.boolean()
+		.optional()
+		.describe('true: only messages you saved for later'),
+	isThread: z
+		.boolean()
+		.optional()
+		.describe('true: only messages that are part of a thread'),
+	sort: z
+		.enum(['score', 'timestamp'])
+		.optional()
+		.describe('Default score (relevance). Use timestamp to sort by time.'),
+	sort_dir: z.enum(['asc', 'desc']).optional().describe('Default desc.'),
+	highlight: z.boolean().optional(),
+	team_id: z.string().optional(),
+	cursor: z.string().optional(),
+	limit: z.number().optional(),
+	page: z.number().optional().describe('Default 1.'),
+	count: z
+		.number()
+		.optional()
+		.describe('Results per page, default 20, at most 100.'),
+});
+
+export type MessagesSearchInput = z.infer<typeof MessagesSearchInputSchema>;
+
+const STRUCTURED_SEARCH_KEYS = [
+	'keywords',
+	'exactPhrase',
+	'exclude',
+	'in',
+	'notIn',
+	'from',
+	'notFrom',
+	'with',
+	'after',
+	'before',
+	'on',
+	'during',
+	'hasPin',
+	'hasReaction',
+	'isSaved',
+	'isThread',
+] as const;
+
+// A word that is quoted, or that Slack would read as a modifier or exclusion.
+function slackTerm(value: string): string {
+	const v = value.trim().replace(/"/g, '');
+	return /[\s:]|^-/.test(v) ? `"${v}"` : v;
+}
+
+// Channel and person names are written after # or @ with no spaces.
+const handle = (prefix: '#' | '@', v: string) =>
+	`${prefix}${v.trim().replace(/^[#@]/, '').replace(/\s+/g, '-')}`;
+
+/**
+ * Build a Slack search string from structured inputs. Modifiers follow
+ * https://slack.com/help/articles/202528808-Search-in-Slack. A user-given
+ * `query` is ANDed in.
+ */
+export function buildSlackSearchQuery(
+	input: Partial<MessagesSearchInput>,
+): string {
+	const parts: string[] = [];
+	const nonEmpty = (xs?: string[]) => (xs ?? []).filter((x) => x.trim());
+	parts.push(...nonEmpty(input.keywords).map(slackTerm));
+	if (input.exactPhrase?.trim()) {
+		parts.push(`"${input.exactPhrase.trim().replace(/"/g, '')}"`);
+	}
+	parts.push(...nonEmpty(input.exclude).map((w) => `-${slackTerm(w)}`));
+	if (input.in?.trim()) parts.push(`in:${handle('#', input.in)}`);
+	parts.push(...nonEmpty(input.notIn).map((c) => `-in:${handle('#', c)}`));
+	if (input.from?.trim()) parts.push(`from:${handle('@', input.from)}`);
+	parts.push(...nonEmpty(input.notFrom).map((u) => `-from:${handle('@', u)}`));
+	if (input.with?.trim()) parts.push(`with:${handle('@', input.with)}`);
+	if (input.after) parts.push(`after:${input.after}`);
+	if (input.before) parts.push(`before:${input.before}`);
+	if (input.on) parts.push(`on:${input.on}`);
+	if (input.during?.trim()) parts.push(`during:${input.during.trim()}`);
+	if (input.hasPin) parts.push('has:pin');
+	if (input.hasReaction?.trim()) {
+		parts.push(`has::${input.hasReaction.trim().replace(/^:|:$/g, '')}:`);
+	}
+	if (input.isSaved) parts.push('is:saved');
+	if (input.isThread) parts.push('is:thread');
+
+	const structured = parts.join(' ');
+	const q = input.query?.trim();
+	if (!q) return structured;
+	if (!structured) return q;
+	return `${q} ${structured}`;
+}
+
+/** The search.messages params: the compiled query plus the paging fields. */
+export function slackSearchParams(input: MessagesSearchInput) {
+	const rest: Record<string, unknown> = { ...input };
+	for (const k of STRUCTURED_SEARCH_KEYS) delete rest[k];
+	return { ...rest, query: buildSlackSearchQuery(input) };
+}
+
+const PostMessageInputSchema = z.object({
+	channel: z.string(),
+	text: z.string().optional(),
+	blocks: z
+		.array(
+			z
+				.object({
+					type: z.string(),
+				})
+				.loose(),
+		)
+		.optional(),
+	attachments: z.array(z.record(z.string(), z.unknown())).optional(),
+	thread_ts: z.string().optional(),
+	reply_broadcast: z.boolean().optional(),
+	parse: z.enum(['full', 'none']).optional(),
+	link_names: z.boolean().optional(),
+	unfurl_links: z.boolean().optional(),
+	unfurl_media: z.boolean().optional(),
+	mrkdwn: z.boolean().optional(),
+	as_user: z.boolean().optional(),
+	icon_emoji: z.string().optional(),
+	icon_url: z.string().optional(),
+	username: z.string().optional(),
+	metadata: z
+		.object({
+			event_type: z.string(),
+			event_payload: z.record(z.string(), z.unknown()),
+		})
+		.optional(),
+});
+
+const MessagesUpdateInputSchema = z.object({
+	channel: z.string(),
+	ts: z.string(),
+	text: z.string().optional(),
+	blocks: z
+		.array(
+			z
+				.object({
+					type: z.string(),
+				})
+				.loose(),
+		)
+		.optional(),
+	attachments: z.array(z.record(z.string(), z.unknown())).optional(),
+	parse: z.enum(['full', 'none']).optional(),
+	link_names: z.boolean().optional(),
+	as_user: z.boolean().optional(),
+	file_ids: z.array(z.string()).optional(),
+	reply_broadcast: z.boolean().optional(),
+	metadata: z
+		.object({
+			event_type: z.string(),
+			event_payload: z.record(z.string(), z.unknown()),
+		})
+		.optional(),
+});
+
+const ReactionsAddInputSchema = z.object({
+	channel: z.string(),
+	timestamp: z.string(),
+	name: z.string(),
+});
+
+const ReactionsGetInputSchema = z.object({
+	channel: z.string().optional(),
+	timestamp: z.string().optional(),
+	file: z.string().optional(),
+	file_comment: z.string().optional(),
+	full: z.boolean().optional(),
+});
+
+const ReactionsRemoveInputSchema = z.object({
+	name: z.string(),
+	channel: z.string().optional(),
+	timestamp: z.string().optional(),
+	file: z.string().optional(),
+	file_comment: z.string().optional(),
+});
+
+const StarsAddInputSchema = z.object({
+	channel: z.string().optional(),
+	timestamp: z.string().optional(),
+	file: z.string().optional(),
+	file_comment: z.string().optional(),
+});
+
+const StarsRemoveInputSchema = z.object({
+	channel: z.string().optional(),
+	timestamp: z.string().optional(),
+	file: z.string().optional(),
+	file_comment: z.string().optional(),
+});
+
+const StarsListInputSchema = z.object({
+	team_id: z.string().optional(),
+	cursor: z.string().optional(),
+	limit: z.number().optional(),
+	page: z.number().optional(),
+	count: z.number().optional(),
+});
+
+const AdminTeamsListInputSchema = z.object({
+	limit: z.number().optional(),
+	cursor: z.string().optional(),
+});
+
+const AdminConversationsSearchInputSchema = z.object({
+	team_ids: z.array(z.string()).optional(),
+	connected_team_ids: z.array(z.string()).optional(),
+	query: z.string().optional(),
+	limit: z.number().optional(),
+	cursor: z.string().optional(),
+	search_channel_types: z.array(z.string()).optional(),
+	sort: z.string().optional(),
+	sort_dir: z.string().optional(),
+	total_count_only: z.boolean().optional(),
+});
+
+const AdminConversationsGetTeamsInputSchema = z.object({
+	channel_id: z.string(),
+	cursor: z.string().optional(),
+	limit: z.number().optional(),
+});
+
+const AdminConversationsSetTeamsInputSchema = z.object({
+	channel_id: z.string(),
+	team_id: z.string().optional(),
+	target_team_ids: z.array(z.string()).optional(),
+	org_channel: z.boolean().optional(),
+});
+
+export const SlackEndpointInputSchemas = {
+	channelsArchive: ChannelsArchiveInputSchema,
+	channelsClose: ChannelsCloseInputSchema,
+	channelsCreate: ChannelsCreateInputSchema,
+	channelsGet: ChannelsGetInputSchema,
+	channelsList: ChannelsListInputSchema,
+	channelsListMine: ChannelsListMineInputSchema,
+	channelsGetHistory: ChannelsGetHistoryInputSchema,
+	channelsInvite: ChannelsInviteInputSchema,
+	channelsJoin: ChannelsJoinInputSchema,
+	channelsKick: ChannelsKickInputSchema,
+	channelsLeave: ChannelsLeaveInputSchema,
+	channelsGetMembers: ChannelsGetMembersInputSchema,
+	channelsOpen: ChannelsOpenInputSchema,
+	channelsRename: ChannelsRenameInputSchema,
+	channelsGetReplies: ChannelsGetRepliesInputSchema,
+	channelsSetPurpose: ChannelsSetPurposeInputSchema,
+	channelsSetTopic: ChannelsSetTopicInputSchema,
+	channelsUnarchive: ChannelsUnarchiveInputSchema,
+	usersGet: UsersGetInputSchema,
+	usersList: UsersListInputSchema,
+	usersGetProfile: UsersGetProfileInputSchema,
+	usersGetPresence: UsersGetPresenceInputSchema,
+	usersUpdateProfile: UsersUpdateProfileInputSchema,
+	userGroupsCreate: UserGroupsCreateInputSchema,
+	userGroupsDisable: UserGroupsDisableInputSchema,
+	userGroupsEnable: UserGroupsEnableInputSchema,
+	userGroupsList: UserGroupsListInputSchema,
+	userGroupsUpdate: UserGroupsUpdateInputSchema,
+	filesDownload: FilesDownloadInputSchema,
+	filesGet: FilesGetInputSchema,
+	filesList: FilesListInputSchema,
+	filesUpload: FilesUploadInputSchema,
+	messagesDelete: MessagesDeleteInputSchema,
+	messagesGetPermalink: MessagesGetPermalinkInputSchema,
+	messagesSearch: MessagesSearchInputSchema,
+	postMessage: PostMessageInputSchema,
+	messagesUpdate: MessagesUpdateInputSchema,
+	reactionsAdd: ReactionsAddInputSchema,
+	reactionsGet: ReactionsGetInputSchema,
+	reactionsRemove: ReactionsRemoveInputSchema,
+	starsAdd: StarsAddInputSchema,
+	starsRemove: StarsRemoveInputSchema,
+	starsList: StarsListInputSchema,
+	adminTeamsList: AdminTeamsListInputSchema,
+	adminConversationsSearch: AdminConversationsSearchInputSchema,
+	adminConversationsGetTeams: AdminConversationsGetTeamsInputSchema,
+	adminConversationsSetTeams: AdminConversationsSetTeamsInputSchema,
+} as const;
+
+export type SlackEndpointInputs = {
+	[K in keyof typeof SlackEndpointInputSchemas]: z.infer<
+		(typeof SlackEndpointInputSchemas)[K]
+	>;
+};
+
+const ResponseMetadataSchema = z
+	.object({
+		next_cursor: z.string().optional(),
+		messages: z.array(z.string()).optional(),
+	})
+	.loose();
+
+const SlackResponseSchema = z
+	.object({
+		ok: z.boolean(),
+		error: z.string().optional(),
+		needed: z.string().optional(),
+		provided: z.string().optional(),
+		response_metadata: ResponseMetadataSchema.optional(),
+	})
+	.loose();
+
+const ChannelTopicSchema = z
+	.object({
+		value: z.string(),
+		creator: z.string(),
+		last_set: z.number(),
+	})
+	.loose();
+
+const ChannelSchema = z
+	.object({
+		id: z.string(),
+		name: z.string().optional(),
+		is_channel: z.boolean().optional(),
+		is_group: z.boolean().optional(),
+		is_im: z.boolean().optional(),
+		is_mpim: z.boolean().optional(),
+		is_private: z.boolean().optional(),
+		created: z.number().optional(),
+		is_archived: z.boolean().optional(),
+		is_general: z.boolean().optional(),
+		unlinked: z.number().optional(),
+		name_normalized: z.string().optional(),
+		is_shared: z.boolean().optional(),
+		is_org_shared: z.boolean().optional(),
+		is_pending_ext_shared: z.boolean().optional(),
+		pending_shared: z.array(z.string()).optional(),
+		context_team_id: z.string().optional(),
+		updated: z.number().optional(),
+		creator: z.string().optional(),
+		is_member: z.boolean().optional(),
+		num_members: z.number().optional(),
+		topic: ChannelTopicSchema.optional(),
+		purpose: ChannelTopicSchema.optional(),
+	})
+	.loose();
+
+const UserProfileSchema = z
+	.object({
+		avatar_hash: z.string().optional(),
+		status_text: z.string().optional(),
+		status_emoji: z.string().optional(),
+		status_expiration: z.number().optional(),
+		real_name: z.string().optional(),
+		display_name: z.string().optional(),
+		real_name_normalized: z.string().optional(),
+		display_name_normalized: z.string().optional(),
+		email: z.string().optional(),
+		image_24: z.string().optional(),
+		image_32: z.string().optional(),
+		image_48: z.string().optional(),
+		image_72: z.string().optional(),
+		image_192: z.string().optional(),
+		image_512: z.string().optional(),
+		team: z.string().optional(),
+		title: z.string().optional(),
+		phone: z.string().optional(),
+		skype: z.string().optional(),
+		first_name: z.string().optional(),
+		last_name: z.string().optional(),
+	})
+	.loose();
+
+const UserSchema = z
+	.object({
+		id: z.string(),
+		team_id: z.string().optional(),
+		name: z.string().optional(),
+		deleted: z.boolean().optional(),
+		color: z.string().optional(),
+		real_name: z.string().optional(),
+		tz: z.string().optional(),
+		tz_label: z.string().optional(),
+		tz_offset: z.number().optional(),
+		profile: UserProfileSchema.optional(),
+		is_admin: z.boolean().optional(),
+		is_owner: z.boolean().optional(),
+		is_primary_owner: z.boolean().optional(),
+		is_restricted: z.boolean().optional(),
+		is_ultra_restricted: z.boolean().optional(),
+		is_bot: z.boolean().optional(),
+		is_app_user: z.boolean().optional(),
+		updated: z.number().optional(),
+		is_email_confirmed: z.boolean().optional(),
+		who_can_share_contact_card: z.string().optional(),
+		locale: z.string().optional(),
+	})
+	.loose();
+
+const UsergroupSchema = z
+	.object({
+		id: z.string(),
+		team_id: z.string().optional(),
+		is_usergroup: z.boolean().optional(),
+		is_subteam: z.boolean().optional(),
+		name: z.string().optional(),
+		description: z.string().optional(),
+		handle: z.string().optional(),
+		is_external: z.boolean().optional(),
+		date_create: z.number().optional(),
+		date_update: z.number().optional(),
+		date_delete: z.number().optional(),
+		auto_type: z.string().nullable().optional(),
+		auto_provision: z.boolean().optional(),
+		enterprise_subteam_id: z.string().optional(),
+		created_by: z.string().optional(),
+		updated_by: z.string().optional(),
+		deleted_by: z.string().nullable().optional(),
+		prefs: z
+			.object({
+				channels: z.array(z.string()).optional(),
+				groups: z.array(z.string()).optional(),
+			})
+			.optional(),
+		users: z.array(z.string()).optional(),
+		user_count: z.number().optional(),
+		channel_count: z.number().optional(),
+	})
+	.loose();
+
+const FileSchema = z
+	.object({
+		id: z.string(),
+		created: z.number().optional(),
+		timestamp: z.number().optional(),
+		name: z.string().optional(),
+		title: z.string().optional(),
+		mimetype: z.string().optional(),
+		filetype: z.string().optional(),
+		pretty_type: z.string().optional(),
+		user: z.string().optional(),
+		user_team: z.string().optional(),
+		editable: z.boolean().optional(),
+		size: z.number().optional(),
+		mode: z.string().optional(),
+		is_external: z.boolean().optional(),
+		external_type: z.string().optional(),
+		is_public: z.boolean().optional(),
+		public_url_shared: z.boolean().optional(),
+		display_as_bot: z.boolean().optional(),
+		username: z.string().optional(),
+		url_private: z.string().optional(),
+		url_private_download: z.string().optional(),
+		permalink: z.string().optional(),
+		permalink_public: z.string().optional(),
+		channels: z.array(z.string()).optional(),
+		groups: z.array(z.string()).optional(),
+		ims: z.array(z.string()).optional(),
+	})
+	.loose();
+
+const BlockSchema = z
+	.object({
+		type: z.string(),
+	})
+	.loose();
+
+const AttachmentSchema = z.record(z.string(), z.unknown());
+
+const ReactionSchema = z
+	.object({
+		name: z.string(),
+		count: z.number(),
+		users: z.array(z.string()),
+	})
+	.loose();
+
+const MessageSchema = z
+	.object({
+		type: z.string().optional(),
+		subtype: z.string().optional(),
+		text: z.string().optional(),
+		ts: z.string().optional(),
+		user: z.string().optional(),
+		bot_id: z.string().optional(),
+		app_id: z.string().optional(),
+		team: z.string().optional(),
+		username: z.string().optional(),
+		icons: z
+			.object({
+				emoji: z.string().optional(),
+				image_36: z.string().optional(),
+				image_48: z.string().optional(),
+				image_72: z.string().optional(),
+			})
+			.optional(),
+		blocks: z.array(BlockSchema).optional(),
+		attachments: z.array(AttachmentSchema).optional(),
+		thread_ts: z.string().optional(),
+		parent_user_id: z.string().optional(),
+		reply_count: z.number().optional(),
+		reply_users_count: z.number().optional(),
+		latest_reply: z.string().optional(),
+		reply_users: z.array(z.string()).optional(),
+		is_locked: z.boolean().optional(),
+		subscribed: z.boolean().optional(),
+		reactions: z.array(ReactionSchema).optional(),
+		edited: z
+			.object({
+				user: z.string(),
+				ts: z.string(),
+			})
+			.optional(),
+	})
+	.loose();
+
+const PagingSchema = z
+	.object({
+		count: z.number(),
+		total: z.number(),
+		page: z.number(),
+		pages: z.number(),
+	})
+	.loose();
+
+const PaginationSchema = z
+	.object({
+		total_count: z.number().optional(),
+		page: z.number().optional(),
+		per_page: z.number().optional(),
+		page_count: z.number().optional(),
+		first: z.number().optional(),
+		last: z.number().optional(),
+	})
+	.loose();
+
+const ConversationsArchiveResponseSchema = SlackResponseSchema;
+const ConversationsCloseResponseSchema = SlackResponseSchema.extend({
+	no_op: z.boolean().optional(),
+	already_closed: z.boolean().optional(),
+}).loose();
+const ConversationsCreateResponseSchema = SlackResponseSchema.extend({
+	channel: ChannelSchema.optional(),
+}).loose();
+const ConversationsInfoResponseSchema = SlackResponseSchema.extend({
+	channel: ChannelSchema.optional(),
+}).loose();
+const ConversationsListResponseSchema = SlackResponseSchema.extend({
+	channels: z.array(ChannelSchema).optional(),
+}).loose();
+const ConversationsHistoryResponseSchema = SlackResponseSchema.extend({
+	messages: z.array(MessageSchema).optional(),
+	has_more: z.boolean().optional(),
+	pin_count: z.number().optional(),
+	channel_actions_count: z.number().optional(),
+	channel_actions_ts: z.number().nullable().optional(),
+}).loose();
+const ConversationsInviteResponseSchema = SlackResponseSchema.extend({
+	channel: ChannelSchema.optional(),
+}).loose();
+const ConversationsJoinResponseSchema = SlackResponseSchema.extend({
+	channel: ChannelSchema.optional(),
+	warning: z.string().optional(),
+}).loose();
+const ConversationsKickResponseSchema = SlackResponseSchema;
+const ConversationsLeaveResponseSchema = SlackResponseSchema.extend({
+	not_in_channel: z.boolean().optional(),
+}).loose();
+const ConversationsMembersResponseSchema = SlackResponseSchema.extend({
+	members: z.array(z.string()).optional(),
+}).loose();
+const ConversationsOpenResponseSchema = SlackResponseSchema.extend({
+	channel: ChannelSchema.optional(),
+	no_op: z.boolean().optional(),
+	already_open: z.boolean().optional(),
+}).loose();
+const ConversationsRenameResponseSchema = SlackResponseSchema.extend({
+	channel: ChannelSchema.optional(),
+}).loose();
+const ConversationsRepliesResponseSchema = SlackResponseSchema.extend({
+	messages: z.array(MessageSchema).optional(),
+	has_more: z.boolean().optional(),
+}).loose();
+const ConversationsSetPurposeResponseSchema = SlackResponseSchema.extend({
+	channel: ChannelSchema.optional(),
+	purpose: z.string().optional(),
+}).loose();
+const ConversationsSetTopicResponseSchema = SlackResponseSchema.extend({
+	channel: ChannelSchema.optional(),
+	topic: z.string().optional(),
+}).loose();
+const ConversationsUnarchiveResponseSchema = SlackResponseSchema;
+
+const UsersInfoResponseSchema = SlackResponseSchema.extend({
+	user: UserSchema.optional(),
+}).loose();
+const UsersListResponseSchema = SlackResponseSchema.extend({
+	members: z.array(UserSchema).optional(),
+	cache_ts: z.number().optional(),
+}).loose();
+const UsersProfileGetResponseSchema = SlackResponseSchema.extend({
+	profile: UserProfileSchema.optional(),
+}).loose();
+const UsersGetPresenceResponseSchema = SlackResponseSchema.extend({
+	presence: z.string().optional(),
+	online: z.boolean().optional(),
+	auto_away: z.boolean().optional(),
+	manual_away: z.boolean().optional(),
+	connection_count: z.number().optional(),
+	last_activity: z.number().optional(),
+}).loose();
+const UsersProfileSetResponseSchema = SlackResponseSchema.extend({
+	profile: UserProfileSchema.optional(),
+}).loose();
+
+const UsergroupsCreateResponseSchema = SlackResponseSchema.extend({
+	usergroup: UsergroupSchema.optional(),
+}).loose();
+const UsergroupsDisableResponseSchema = SlackResponseSchema.extend({
+	usergroup: UsergroupSchema.optional(),
+}).loose();
+const UsergroupsEnableResponseSchema = SlackResponseSchema.extend({
+	usergroup: UsergroupSchema.optional(),
+}).loose();
+const UsergroupsListResponseSchema = SlackResponseSchema.extend({
+	userGroups: z.array(UsergroupSchema).optional(),
+}).loose();
+const UsergroupsUpdateResponseSchema = SlackResponseSchema.extend({
+	usergroup: UsergroupSchema.optional(),
+}).loose();
+
+const FilesInfoResponseSchema = SlackResponseSchema.extend({
+	file: FileSchema.optional(),
+	comments: z
+		.array(
+			z.object({
+				id: z.string(),
+				timestamp: z.number(),
+				user: z.string(),
+				comment: z.string(),
+			}),
+		)
+		.optional(),
+	paging: PagingSchema.optional(),
+}).loose();
+const FilesListResponseSchema = SlackResponseSchema.extend({
+	files: z.array(FileSchema).optional(),
+	paging: PagingSchema.optional(),
+}).loose();
+const FilesUploadResponseSchema = SlackResponseSchema.extend({
+	file: FileSchema.optional(),
+}).loose();
+
+const ChatDeleteResponseSchema = SlackResponseSchema.extend({
+	channel: z.string().optional(),
+	ts: z.string().optional(),
+}).loose();
+const ChatGetPermalinkResponseSchema = SlackResponseSchema.extend({
+	channel: z.string().optional(),
+	permalink: z.string().optional(),
+}).loose();
+const SearchMessagesResponseSchema = SlackResponseSchema.extend({
+	query: z.string().optional(),
+	messages: z
+		.object({
+			total: z.number().optional(),
+			pagination: PaginationSchema.optional(),
+			paging: PagingSchema.optional(),
+			matches: z
+				.array(
+					MessageSchema.extend({
+						channel: z
+							.object({
+								id: z.string(),
+								name: z.string().optional(),
+							})
+							.optional(),
+						permalink: z.string().optional(),
+					}),
+				)
+				.optional(),
+		})
+		.optional(),
+}).loose();
+const ChatPostMessageResponseSchema = SlackResponseSchema.extend({
+	channel: z.string().optional(),
+	ts: z.string().optional(),
+	message: MessageSchema.optional(),
+}).loose();
+const ChatUpdateResponseSchema = SlackResponseSchema.extend({
+	channel: z.string().optional(),
+	ts: z.string().optional(),
+	text: z.string().optional(),
+	message: MessageSchema.optional(),
+}).loose();
+
+const ReactionsAddResponseSchema = SlackResponseSchema;
+const ReactionsGetResponseSchema = SlackResponseSchema.extend({
+	type: z.string().optional(),
+	channel: z.string().optional(),
+	message: MessageSchema.optional(),
+	file: FileSchema.optional(),
+	comment: z
+		.object({
+			id: z.string(),
+			comment: z.string(),
+			reactions: z.array(ReactionSchema).optional(),
+		})
+		.optional(),
+}).loose();
+const ReactionsRemoveResponseSchema = SlackResponseSchema;
+
+const StarsAddResponseSchema = SlackResponseSchema;
+const StarsRemoveResponseSchema = SlackResponseSchema;
+const StarsListResponseSchema = SlackResponseSchema.extend({
+	items: z
+		.array(
+			z.object({
+				type: z.string(),
+				channel: z.string().optional(),
+				message: MessageSchema.optional(),
+				file: FileSchema.optional(),
+				comment: z
+					.object({
+						id: z.string(),
+						comment: z.string(),
+					})
+					.optional(),
+				date_create: z.number().optional(),
+			}),
+		)
+		.optional(),
+	paging: PagingSchema.optional(),
+}).loose();
+
+const AdminTeamsListResponseSchema = SlackResponseSchema.extend({
+	teams: z
+		.array(
+			z.object({
+				id: z.string().optional(),
+				name: z.string().optional(),
+				discoverability: z.string().optional(),
+				primary_owner: z
+					.object({
+						user_id: z.string().optional(),
+						email: z.string().optional(),
+					})
+					.optional(),
+				team_url: z.string().optional(),
+			}),
+		)
+		.optional(),
+}).loose();
+
+const AdminConversationsSearchResponseSchema = SlackResponseSchema.extend({
+	conversations: z
+		.array(
+			z.object({
+				id: z.string().optional(),
+				name: z.string().optional(),
+			}),
+		)
+		.optional(),
+	next_cursor: z.string().optional(),
+	total_count: z.number().optional(),
+}).loose();
+
+const AdminConversationsGetTeamsResponseSchema = SlackResponseSchema.extend({
+	team_ids: z.array(z.string()).optional(),
+}).loose();
+
+const AdminConversationsSetTeamsResponseSchema = SlackResponseSchema.extend(
+	{},
+).loose();
+
+export const SlackEndpointOutputSchemas = {
+	channelsArchive: ConversationsArchiveResponseSchema,
+	channelsClose: ConversationsCloseResponseSchema,
+	channelsCreate: ConversationsCreateResponseSchema,
+	channelsGet: ConversationsInfoResponseSchema,
+	channelsList: ConversationsListResponseSchema,
+	channelsListMine: ConversationsListResponseSchema,
+	channelsGetHistory: ConversationsHistoryResponseSchema,
+	channelsInvite: ConversationsInviteResponseSchema,
+	channelsJoin: ConversationsJoinResponseSchema,
+	channelsKick: ConversationsKickResponseSchema,
+	channelsLeave: ConversationsLeaveResponseSchema,
+	channelsGetMembers: ConversationsMembersResponseSchema,
+	channelsOpen: ConversationsOpenResponseSchema,
+	channelsRename: ConversationsRenameResponseSchema,
+	channelsGetReplies: ConversationsRepliesResponseSchema,
+	channelsSetPurpose: ConversationsSetPurposeResponseSchema,
+	channelsSetTopic: ConversationsSetTopicResponseSchema,
+	channelsUnarchive: ConversationsUnarchiveResponseSchema,
+	usersGet: UsersInfoResponseSchema,
+	usersList: UsersListResponseSchema,
+	usersGetProfile: UsersProfileGetResponseSchema,
+	usersGetPresence: UsersGetPresenceResponseSchema,
+	usersUpdateProfile: UsersProfileSetResponseSchema,
+	userGroupsCreate: UsergroupsCreateResponseSchema,
+	userGroupsDisable: UsergroupsDisableResponseSchema,
+	userGroupsEnable: UsergroupsEnableResponseSchema,
+	userGroupsList: UsergroupsListResponseSchema,
+	userGroupsUpdate: UsergroupsUpdateResponseSchema,
+	filesDownload: FileOutputSchema,
+	filesGet: FilesInfoResponseSchema,
+	filesList: FilesListResponseSchema,
+	filesUpload: FilesUploadResponseSchema,
+	messagesDelete: ChatDeleteResponseSchema,
+	messagesGetPermalink: ChatGetPermalinkResponseSchema,
+	messagesSearch: SearchMessagesResponseSchema,
+	postMessage: ChatPostMessageResponseSchema,
+	messagesUpdate: ChatUpdateResponseSchema,
+	reactionsAdd: ReactionsAddResponseSchema,
+	reactionsGet: ReactionsGetResponseSchema,
+	reactionsRemove: ReactionsRemoveResponseSchema,
+	starsAdd: StarsAddResponseSchema,
+	starsRemove: StarsRemoveResponseSchema,
+	starsList: StarsListResponseSchema,
+	adminTeamsList: AdminTeamsListResponseSchema,
+	adminConversationsSearch: AdminConversationsSearchResponseSchema,
+	adminConversationsGetTeams: AdminConversationsGetTeamsResponseSchema,
+	adminConversationsSetTeams: AdminConversationsSetTeamsResponseSchema,
+} as const;
+
+export type SlackEndpointOutputs = {
+	[K in keyof typeof SlackEndpointOutputSchemas]: z.infer<
+		(typeof SlackEndpointOutputSchemas)[K]
+	>;
+};
+
+export type ConversationsArchiveResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.channelsArchive
+>;
+export type ConversationsCloseResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.channelsClose
+>;
+export type ConversationsCreateResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.channelsCreate
+>;
+export type ConversationsInfoResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.channelsGet
+>;
+export type ConversationsListResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.channelsList
+>;
+export type ConversationsHistoryResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.channelsGetHistory
+>;
+export type ConversationsInviteResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.channelsInvite
+>;
+export type ConversationsJoinResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.channelsJoin
+>;
+export type ConversationsKickResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.channelsKick
+>;
+export type ConversationsLeaveResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.channelsLeave
+>;
+export type ConversationsMembersResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.channelsGetMembers
+>;
+export type ConversationsOpenResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.channelsOpen
+>;
+export type ConversationsRenameResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.channelsRename
+>;
+export type ConversationsRepliesResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.channelsGetReplies
+>;
+export type ConversationsSetPurposeResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.channelsSetPurpose
+>;
+export type ConversationsSetTopicResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.channelsSetTopic
+>;
+export type ConversationsUnarchiveResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.channelsUnarchive
+>;
+export type UsersInfoResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.usersGet
+>;
+export type UsersListResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.usersList
+>;
+export type UsersProfileGetResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.usersGetProfile
+>;
+export type UsersGetPresenceResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.usersGetPresence
+>;
+export type UsersProfileSetResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.usersUpdateProfile
+>;
+export type UsergroupsCreateResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.userGroupsCreate
+>;
+export type UsergroupsDisableResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.userGroupsDisable
+>;
+export type UsergroupsEnableResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.userGroupsEnable
+>;
+export type UsergroupsListResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.userGroupsList
+>;
+export type UsergroupsUpdateResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.userGroupsUpdate
+>;
+export type FilesInfoResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.filesGet
+>;
+export type FilesListResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.filesList
+>;
+export type FilesUploadResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.filesUpload
+>;
+export type ChatDeleteResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.messagesDelete
+>;
+export type ChatGetPermalinkResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.messagesGetPermalink
+>;
+export type SearchMessagesResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.messagesSearch
+>;
+export type ChatPostMessageResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.postMessage
+>;
+export type ChatUpdateResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.messagesUpdate
+>;
+export type ReactionsAddResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.reactionsAdd
+>;
+export type ReactionsGetResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.reactionsGet
+>;
+export type ReactionsRemoveResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.reactionsRemove
+>;
+export type StarsAddResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.starsAdd
+>;
+export type StarsRemoveResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.starsRemove
+>;
+export type StarsListResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.starsList
+>;
+export type AdminTeamsListResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.adminTeamsList
+>;
+export type AdminConversationsSearchResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.adminConversationsSearch
+>;
+export type AdminConversationsGetTeamsResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.adminConversationsGetTeams
+>;
+export type AdminConversationsSetTeamsResponse = z.infer<
+	typeof SlackEndpointOutputSchemas.adminConversationsSetTeams
+>;
